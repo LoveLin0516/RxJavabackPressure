@@ -33,3 +33,48 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+/**
+ * 更新Git Hook
+ */
+task updateGitHook(group: "fly") doLast{
+    //要更新的文件列表
+    def fileNames = [
+            'applypatch-msg',
+            'commit-msg',
+            'post-update',
+            'pre-applypatch',
+            'pre-commit',
+            'prepare-commit-msg',
+            'pre-push',
+            'pre-rebase',
+            'pre-receive',
+            'update',
+    ]
+
+    copy{
+        from("${project.rootDir}/scripts${File.separator}git-hooks${File.separator}commit-msg")
+        into("${project.rootDir}/.git${File.separator}hooks")
+    }
+
+    try {
+        println "更新 ${name} 成功"
+        "chmod +x .git/hooks/commit-msg".execute()
+    }catch(ignored){
+
+    }
+
+//    fileNames.each { name ->
+//        def file = new File(".git/hooks/${name}")
+//        try {
+//            new URL("http://o.mail.163.com/app/webmail/aIntelligent/git-hooks/${name}").withInputStream { i ->
+//                file.withOutputStream {
+//                    it << i
+//                }
+//            }
+//            println "更新 ${name} 成功"
+//            "chmod +x .git/hooks/${name}".execute()
+//        } catch (ignored) {
+//        }
+//    }
+}
