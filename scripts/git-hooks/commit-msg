@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# this is a bash shell to check the commit msg. If you DO NOT follow the convention we defined, it can not be commit success.
+# Please see the detail convention in https://git.mail.netease.com/tech/yxguidelines/yanxuan-git-commit-msg-convention
+
+export LANG=zh_CN.UTF-8
+
+types="(feat|change|fix|docs|style|refactor|test|chore|revert)"
+commit_regex="(^$types(\([^\)]*\))?:.{1,50}$)|^(Merge|Revert)"
+
+error_msg="Aborting commit. Please follow the convention.
+
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+
+scope.size <= 20
+subject.size <= 50
+
+Scope 的定义大的模块，比如（登录，网络库，蓝牙框架等），可以省略，但是 subject 一定需要遵循 WBO 的原则。在 scope 存在时，原则就是 scope 指定大的模块，subject 中的 where 指定具体的页面。
+
+Type（重要）必须选填以下中的一个：
+
+feat: 新功能（feature）
+change: 对原提交的修改，如新功能提交之后的优化、影响较小的代码重构等
+fix: 修补bug
+docs: 文档（documentation）
+style: 格式（不影响代码运行的变动）
+refactor: 重构（即不是新增功能，也不是修改bug的代码变动）
+test: 增加测试
+chore: 构建过程或辅助工具的变动
+revert: 回滚
+例如：
+---
+revert: feat(pencil): add 'graphiteWidth' option
+
+This reverts commit 667ecc1654a317a13331b17617d973392f415f02.
+---
+see the detail in https://git.mail.netease.com/Fly/yanxuan-git-commit-msg-convention."
+
+if ! grep -qE "$commit_regex" "$1"; then
+    echo "$error_msg" >&2
+    exit 1
+fi
