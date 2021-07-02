@@ -1,5 +1,5 @@
 #!/bin/sh
-#1
+#
 # this is a bash shell to check the commit msg. If you DO NOT follow the convention we defined, it can not be commit success.
 # Please see the detail convention in https://git.mail.netease.com/tech/yxguidelines/yanxuan-git-commit-msg-convention
 
