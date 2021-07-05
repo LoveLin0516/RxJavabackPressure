@@ -65,12 +65,31 @@ project.afterEvaluate {
  */
 task updateGitHook(group: "fly") doLast {
     try {
-        copy {
-            from("${project.rootDir}/scripts${File.separator}git-hooks${File.separator}commit-msg")
-            into("${project.rootDir}/.git${File.separator}hooks")
+        def timeStart = System.currentTimeMillis()
+        def fromFilePath= "${project.rootDir}/scripts${File.separator}git-hooks${File.separator}commit-msg"
+        def toFilePath = "${project.rootDir}/.git${File.separator}hooks"
+        def commitMsgFile = "${toFilePath}${File.separator}commit-msg"
+
+        File file = new File(commitMsgFile);
+        println file.exists()
+        println fromFilePath
+        println toFilePath
+        println file.getAbsolutePath()
+        def fileExist = file.exists()
+        if(!fileExist){
+            copy {
+                from(fromFilePath)
+                into(toFilePath)
+            }
+            println "更新 ${name} 成功"
+            "chmod +x .git/hooks/commit-msg".execute()
         }
-        println "更新 ${name} 成功"
-        "chmod +x .git/hooks/commit-msg".execute()
+        else{
+            println "gitHook文件已存在，不需要再执行copy操作"
+        }
+
+        def timeEnd = System.currentTimeMillis()
+        println "任务耗时 ${timeEnd- timeStart}ms"
     } catch (ignored) {
         println "---------------updateGitHook出错啦啦啦啦啦啦啦啦啦啦啦--------------"
     }
