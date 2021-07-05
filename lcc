@@ -1,0 +1,145 @@
+#!/bin/bash
+
+#
+# lcc: Likee Commit Command
+#
+# 利用 fzf 提供交互式的 commit 信息生成器
+# lcc 的参数会传递给 git commit 命令.
+#
+if [ -z "$(git status --porcelain)" ]; then 
+    echo "nothing to commit, workspace is clean."
+    exit 0
+fi
+
+LCC_FZF_OPT="
+    --ansi
+    --height='80%'
+    --reverse
+    $FZF_DEFAULT_OPTS
+"
+
+TEMP_TEMPLATE=.like_temp_template
+SED_COMMAND="s/^ *[0-9]*. \([a-z0-9]*\): .*/\1/g"
+TYPE_LIST="\
+ 1. fix:      问题修复 
+ 2. story:    业务需求的相关提交
+ 3. feat:     技术需求的相关提交
+ 4. perf:     可以带来性能提高的改动
+ 5. refactor: 重构类型的改动
+ 6. style:    代码风格的改动
+ 7. docs:     纯文档的改动
+ 8. i18n:     多语言的改动
+ 9. stat:     统计埋点的改动
+10. test:     自动化测试相关的改动
+11. chore:    杂项, 不好归类的都可以放到这里."
+
+SCOPE_LIST="\
+
+ 1. ad          广告模块
+ 2. detail      视频详情页
+ 3. flutter     Flutter 相关的提交
+ 4. live        直播
+ 5. login       登录相关
+ 6. im          聊天
+ 7. index       首页模块
+ 8. media       Media SDK 相关
+ 9. prod        录制相关
+10. push        推送相关
+11. share       分享相关"
+
+type=""
+scope=""
+
+function selectTypeAndScopeByFzf {
+    type=$(echo "$TYPE_LIST" | 
+        FZF_DEFAULT_OPTS="$LCC_FZF_OPT" fzf |
+        sed "$SED_COMMAND")
+    if [ -z "$type" ]; then 
+        echo ""
+        return
+    fi
+    echo "选择类型: $type" 
+
+    scope=$(echo "$SCOPE_LIST" | 
+        FZF_DEFAULT_OPTS="$LCC_FZF_OPT" fzf |
+        sed "s/^ *[0-9]*. \([a-z0-9]*\) .*/\1/g")
+    if [ -n "$scope" ];
+    then
+        echo "修改范围: $scope"
+    else
+        echo "未选择修改范围"
+    fi
+}
+
+function selectTypeAndScope {
+    echo "$TYPE_LIST"
+    echo "输入类型编号"
+    read type_number
+    type=$(echo "$TYPE_LIST" | head -n $type_number | tail -n 1 | sed "$SED_COMMAND")
+}
+
+# 判断是不是在 Windows 上, Windows 的 fzf 不支持 Git Bash
+if [[ `uname` =~ "MINGW" ]];
+then
+    selectTypeAndScope
+else
+    which fzf 2>&1 1>/dev/null
+    if [[ $? -eq 0 ]]; 
+    then
+        selectTypeAndScopeByFzf
+    else
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        echo ">>>> 安装 fzf 可以获得更好的体验!!"
+        echo ">>>> https://github.com/junegunn/fzf"
+        echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+        echo
+
+        selectTypeAndScope
+    fi
+fi
+
+if [ -z "$type" ]; then
+    echo "提交类型不能为空."
+    exit 1
+fi
+
+
+commit_template="\
+# 首行格式: <type>[optional scope][!|?]: <description>"
+commit_template="\
+$commit_template
+$type"
+
+if [ -n "$scope" ];
+then
+    commit_template="$commit_template($scope)"
+fi
+commit_template="$commit_template: "
+
+case "$type" in
+    "fix")
+        commit_template="\
+$commit_template 
+
+- 问题原因:
+
+- 解决方案:
+
+- 影响范围: "
+        ;;
+    "refactor")
+        commit_template="\
+$commit_template
+
+- 重构原因:
+
+- 影响的模块:"
+        ;;
+    *)
+esac
+
+echo "$commit_template" >> $TEMP_TEMPLATE
+git commit -t $TEMP_TEMPLATE $@
+rm $TEMP_TEMPLATE
+
+

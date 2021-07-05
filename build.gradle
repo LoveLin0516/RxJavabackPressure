@@ -37,6 +37,17 @@ task clean(type: Delete) {
 
 project.afterEvaluate {
     println "afterEvaluate------>:"
+//    updateGitHook.dependsOn(':app:assembleDebug')
+//    updateGitHook.mustRunAfter(':app:assembleDebug')
+//
+//    updateGitHook.dependsOn('app:assembleDebug')
+//    updateGitHook.mustRunAfter('app:assembleDebug')
+//
+//    updateGitHook.dependsOn(':assembleDebug')
+//    updateGitHook.mustRunAfter(':assembleDebug')
+//
+//    updateGitHook.dependsOn('assembleDebug')
+//    updateGitHook.mustRunAfter('assembleDebug')
 
 //    println "name: ${name} "
 //    if (name == "app") {
@@ -44,6 +55,8 @@ project.afterEvaluate {
 //            dependsOn(updateGitHook)
 //        }
 //    }
+
+    updateGitHook.execute()
 }
 
 /**
@@ -64,26 +77,26 @@ task updateGitHook(group: "fly") doLast {
 }
 
 
-tasks.whenTaskAdded { task ->
-    println "whenTaskAdded---->${task.name}"
-    if (task.name == 'init') {
-        println "hahahh"
-//        task.dependsOn(':updateGitHook')
-        updateGitHook.dependsOn(":preBuild")
-        updateGitHook.execute()
-    }
-}
+//tasks.whenTaskAdded { task ->
+//    println "whenTaskAdded---->${task.name}"
+//    if (task.name == 'init') {
+//        println "hahahh"
+////        task.dependsOn(':updateGitHook')
+//        updateGitHook.dependsOn(":preBuild")
+//        updateGitHook.execute()
+//    }
+//}
 
-project.gradle.afterProject { project ->
+//project.gradle.afterProject { project ->
 
-    println "afterproject---->${project.name}"
+//    println "afterproject---->${project.name}"
 //    println "hahahh111---->${task.name}"
 //    if (name == "bigovlog") {
 //        tasks.named("preBuild") {
 //            dependsOn(copyGitHookScriptTask)
 //        }
 //    }
-}
+//}
 
 project.gradle.buildStarted { gradle ->
     println "buildStarted---->${gradle.gradleVersion}"
