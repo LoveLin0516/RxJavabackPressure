@@ -104,11 +104,8 @@ if [ -z "$type" ]; then
 fi
 
 
-commit_template="\
-# 首行格式: <type>[optional scope][!|?]: <description>"
-commit_template="\
-$commit_template
-$type"
+commit_template="$type"
+
 
 if [ -n "$scope" ];
 then
